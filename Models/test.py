@@ -4,9 +4,9 @@ import numpy as np
 
 def main():
     # Initialize three regions
-    Georgia = RegionEpi(30000, 100, 0, 31000, 0.3, 0.9, "Georgia")
-    Florida = RegionEpi(45000, 300, 0, 45030, 0.3, 0.9, "Florida")
-    Alabama = RegionEpi(78000, 600, 0, 78060, 0.3, 0.9, "Alabama")
+    Georgia = RegionEpi(30000, 100, 0, 31000, 0.3, 0.1, "Georgia")
+    Florida = RegionEpi(45000, 300, 0, 45030, 0.3, 0.1, "Florida")
+    Alabama = RegionEpi(78000, 600, 0, 78060, 0.3, 0.1, "Alabama")
     # Set borders
     Georgia.set_borders(Florida, Alabama)
     Florida.set_borders(Georgia, Alabama)
@@ -16,9 +16,9 @@ def main():
     Georgia.set_InterCoeffs(Alabama, 0.015, 0.01, 0.032, 0.01)
     Florida.set_InterCoeffs(Alabama, 0.009, 0.002, 0.005, 0.012)
     # Initiate the area, composed of Georgia, Florida, and Alabama.
-    area = regions(Georgia, Florida, Alabama)
+    area = regions(100, 1, Georgia, Florida, Alabama)
     
-    print("\nColumn matrix of the du/dt, composed of s, i, r of each region:")
+    print("\nColumn matrix of the du/dt, composed of s, i, r of each region at time Tf:")
     print(area.column_matrix)
 
     #print("\nThe nested block matrix of the du/dt equation:")
@@ -29,7 +29,7 @@ def main():
 
     print("\nThe sir_over_time matrix is meant to record the s, i, r values for the regions at each time t.")
     #print(area.sir_over_time)
-    print(len(area.sir_over_time)) 
+    print(len(area.sir_over_time)-1) 
 
 ##################
 if __name__ == '__main__':
