@@ -11,9 +11,13 @@ class regions:
     column_matrix = []
     regions = []
 
-    def __init__(self, *args):
+    def __init__(self, Tf, h, *args):
+        self.Tf = Tf
+        self.h = h 
         self.big_matrix = np.array(len(args))
+        self.sir_over_time= []
         i = 0
+        self.regions = []
         for region in args:
             # Give each matrix an index, needed for the big_matrix
             region.index = i
@@ -29,47 +33,52 @@ class regions:
         # SIR population at time T0 is added to sir_over_time
         self.sir_over_time.append(self.column_matrix)
         # days to iterate through 
-        #self.bruteforce_solver(10)
-        self.Henn_solver(10)
+        #self.bruteforce_solver()
+        self.Heun_solver()
         # visualize the solutions from day 0 to day T
         self.plot_solution()
-        
+    
+    # a big ass problem: diagonal matrix is not even included in big_matrix, 
+    # figure out the structure of row_matrix 
     def construct_matrix(self):
         i = 0
         for region in self.regions:
             # initialized a row of the big_matrix
             row_matrix = np.zeros(len(self.regions)).tolist()
-            # the part that is on the diagonal of the big_matrix
             diag_matrix = region.SIREpi()
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
+
+            # new problem is fix the border (who is next to who, and can we assume symmetric)
+            
             # add the interaction matrices to their proper positions
             for border in list(region.border_InterCoeffs.keys()):
-                row_matrix[border.index] = region.border_InterCoeffs[border]
-            # add the row to its proper location in the big_matrix
+                #print("One border:")
+                #print(region.border_InterCoeffs[border])
+                #print("end of border")
+                if border.index!=region.index:
+                    row_matrix[border.index] = region.border_InterCoeffs[border]
             self.big_matrix[region.index] = row_matrix
         
         # Copying the nested block matrix to a 2D matrix
         i_start = 0
         for row_region in self.big_matrix:
-
             j_start = 0
             for column_region in row_region:
-
                 i = i_start
+                #print("new tryout")
+                #print(column_region)
                 for row in column_region:
-
                     j = j_start
                     for item in row:
                         self.onebig_matrix[i][j] = item
                         j += 1
                     i += 1
-
                 j_start += 3
-
             i_start += 3
 
     def construct_column(self):
+        self.column_matrix = []
         for region in self.regions:
             self.column_matrix.append([region.S / region.N])
             self.column_matrix.append([region.I / region.N])
@@ -78,13 +87,36 @@ class regions:
     
     
     # Henn Method: second order explicit  
-    def Henn_solver(self, Tf):
-        
-        for t in range(1, Tf + 1):
-            A_ut = np.dot(self.onebig_matrix, self.column_matrix)
-            A_second = np.dot(self.onebig_matrix, self.onebig_matrix)
-            dudt = A_ut + np.dot(A_second,self.column_matrix)/2
+    def Heun_solver(self):
+        N = int(self.Tf/self.h) + 1
+        for t in range(1, N):
+            # get A(ui)ui
+            dudt = np.dot(self.onebig_matrix, self.column_matrix)
+            # temporary u_i+1
+            un = self.column_matrix + self.h * dudt
+            # update the onebig_matrix
             i = 0
+            for region in self.regions:
+                region.S = region.N*un[i][0]
+                region.I = region.N*un[i+1][0]
+                region.R = region.N*un[i+2][0]
+                i += 3
+            self.construct_matrix()
+            # get A(u_i+1)u_i+1
+            dudt_new = np.dot(self.onebig_matrix, un)
+            # finally, update the column_matrix 
+            self.column_matrix = self.column_matrix + ((self.h)/2)*(dudt + dudt_new)
+            self.sir_over_time.append(self.column_matrix)
+
+    
+    '''
+    def bruteforce_solver(self):
+
+        N = int(self.Tf/self.h) + 1
+        for t in range(1, N):
+            dudt = np.dot(self.onebig_matrix, self.column_matrix)
+            i = 0
+            # does update happend here?? should happen after the update of column matrix 
             for region in self.regions:
                 region.S = dudt[i][0]
                 region.I = dudt[i+1][0]
@@ -96,30 +128,30 @@ class regions:
             self.construct_matrix()
             self.sir_over_time.append(self.column_matrix)
     
-
-    # explicit euler  
-    def bruteforce_solver(self, Tf):
-
-        for t in range(1, Tf + 1):
-            dudt = np.dot(self.onebig_matrix, self.column_matrix)
+    '''
+    # explicit euler 
+    def bruteforce_solver(self):
+        N = int(self.Tf/self.h) + 1
+        for t in range(1, N):
+            dudt = (self.h) * np.dot(self.onebig_matrix, self.column_matrix)
+            #print(dudt)
             i = 0
-            for region in self.regions:
-                region.S = dudt[i][0]
-                region.I = dudt[i+1][0]
-                region.R = dudt[i+2][0]
-                i += 3
             # u(i+1) = du/dt + u(i); update the column_matrix
             self.column_matrix = dudt + self.column_matrix
             # update the big_matrix
+            for region in self.regions:
+                region.S = region.N*self.column_matrix[i][0]
+                region.I = region.N*self.column_matrix[i+1][0]
+                region.R = region.N*self.column_matrix[i+2][0]
+                i += 3
             self.construct_matrix()
             self.sir_over_time.append(self.column_matrix)
-            
+    
     # visualization
     
     def plot_solution(self):
-        t = np.arange(11)
-        # replace 3 with length of all regions later 
-        for i in range(0,3):
+        t = np.arange(0, self.Tf+1, self.h)
+        for i in range(0,len(self.regions)):
             S = []
             I = []
             R = []
@@ -138,4 +170,6 @@ class regions:
             ax.set_ylabel('Number')
             legend = ax.legend()
             legend.get_frame().set_alpha(0.5)
+            name = self.regions[i].name
+            plt.title(name)
             plt.show()
