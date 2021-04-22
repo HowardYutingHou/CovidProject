@@ -16,6 +16,9 @@ class RegionEpi(SIREpidemic):
     # key is of object region, and value is interaction matrix with the region.
     border_InterCoeffs = {}
 
+    # Key is a tuple containing the start date and end date of lockdown.
+    border_lockdown = {}
+
     def __init__(self, S, I, R, N, beta, gamma, name):
         self.S = S
         self.I = I
@@ -29,6 +32,7 @@ class RegionEpi(SIREpidemic):
     def set_borders(self, *borders):
         for border in borders:
             self.border_InterCoeffs[border] = {} # can initialize to be anything, which is to be changed later.
+            self.border_lockdown[border] = 0 # default 0 if no lockdown
 
     def __call__(self):
         print(self.name)
@@ -43,3 +47,8 @@ class RegionEpi(SIREpidemic):
         self.border_InterCoeffs[border] = coeff_matrix
         if(not border.border_InterCoeffs[self]):
             border.set_InterCoeffs(self, s_o, s_i, i_o, i_i)
+
+    def lockdown(self, border, ti, tf):
+        self.border_lockdown[border] = [ti, tf]
+        if(border.border_lockdown[self] == 0):
+            border.lockdown(self, ti, tf)
