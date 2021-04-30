@@ -14,10 +14,13 @@ class RegionEpi(SIREpidemic):
     gamma = 0 # gamma
 
     # key is of object region, and value is interaction matrix with the region.
-    border_InterCoeffs = {}
-
+    #border_InterCoeffs = {}
+    
+    # key is of object region, and value is move out rate between regions 
+    #border_out = {}
+    
     # Key is a tuple containing the start date and end date of lockdown.
-    border_lockdown = {}
+    #border_lockdown = {}
 
     def __init__(self, S, I, R, N, beta, gamma, name):
         self.S = S
@@ -27,6 +30,10 @@ class RegionEpi(SIREpidemic):
         self.beta = beta
         self.gamma = gamma
         self.name = name
+        self.border_InterCoeffs = {}
+        self.border_out = {}
+        self.border_lockdown = {}
+    
         super(RegionEpi, self).__init__()
 
     def set_borders(self, *borders):
@@ -43,12 +50,17 @@ class RegionEpi(SIREpidemic):
     # s_i = susceptible inflow rate, s_o = susceptible outflow rate
     # i_i = infected inflow rate, i_o = infected outflow rate
     def set_InterCoeffs(self, border, s_i, s_o, i_i, i_o):
-        coeff_matrix = [[s_i - s_o, 0, 0], [0, i_i - i_o, 0], [0, 0, 0]]
+        out_list = [s_o,i_o]
+        coeff_matrix = [[s_i, 0, 0], [0, i_i, 0], [0, 0, 0]]
         self.border_InterCoeffs[border] = coeff_matrix
+        self.border_out[border] = out_list 
+        # here, set the other way around 
         if(not border.border_InterCoeffs[self]):
             border.set_InterCoeffs(self, s_o, s_i, i_o, i_i)
-
+        # edit the diagonal matrix to include the move out rate from the specific region
+            
+    # maybe instead of doing city to city, we just lock down entire city?
     def lockdown(self, border, ti, tf):
         self.border_lockdown[border] = [ti, tf]
-        if(border.border_lockdown[self] == 0):
+        if(not border.border_lockdown[self]):
             border.lockdown(self, ti, tf)

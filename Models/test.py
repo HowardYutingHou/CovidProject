@@ -13,21 +13,24 @@ def main():
     Florida.set_borders(Georgia, Alabama)
     Alabama.set_borders(Georgia, Florida)
     # Set interaction coefficients between the borders
+    #Georgia.set_InterCoeffs(Florida, 0, 0, 0, 0)
+    #Alabama.set_InterCoeffs(Georgia, 0, 0, 0, 0)
     Georgia.set_InterCoeffs(Florida, 0.02, 0.03, 0.015, 0.02)
-    Georgia.set_InterCoeffs(Alabama, 0.015, 0.01, 0.032, 0.01)
-    Florida.set_InterCoeffs(Alabama, 0.009, 0.002, 0.005, 0.012)
+    Alabama.set_InterCoeffs(Georgia, 0.015, 0.01, 0.03, 0.01)
+    Florida.set_InterCoeffs(Alabama, 0.01, 0.002, 0.005, 0.01)
+
     # Initiate the area, composed of Georgia, Florida, and Alabama.
     area = regions(100, 1, Georgia, Florida, Alabama)
 
     # add lockdown
-    Georgia.lockdown(Florida, 3, 30)
+    Georgia.lockdown(Florida,20,30)
 
     # days to iterate through
     # self.bruteforce_solver()
     area.Heun_solver()
     # visualize the solutions from day 0 to day T
     area.plot_solution()
-
+    
     print("\nColumn matrix of the du/dt, composed of s, i, r of each region at time Tf:")
     print(area.column_matrix)
 
