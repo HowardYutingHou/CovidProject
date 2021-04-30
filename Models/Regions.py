@@ -54,20 +54,29 @@ class regions:
             diag_matrix = region.SIREpi()
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
-
+            
             # add the interaction matrices to their proper positions
             for border in list(region.border_InterCoeffs.keys()):
                 if border.index != region.index:
-                    titf = self.lockdown_matrix[region.index][border.index]
+                    titf = region.border_lockdown[border]
                     if titf == 0:
+                        row_matrix[region.index][0][0] = row_matrix[region.index][0][0]-region.border_out[border][0]              
+                        row_matrix[region.index][1][1] = row_matrix[region.index][1][1]-region.border_out[border][1]
                         row_matrix[border.index] = region.border_InterCoeffs[border]
                     else:
-                        if (self.t >= titf[0] & self.t <= titf[1]):
-                            row_matrix[border.index] = np.zeros(3, 3)
+                        if ((self.t >= titf[0]) & (self.t <= titf[1])): 
+                            region.beta = region.beta/2
+                            row_matrix[region.index] = region.SIREpi()
+                            region.beta = region.beta*2
+                            #row_matrix[region.index] = [[-region.beta*region.I/(2*region.N), 0, 0], [0, region.beta*region.S / (2*region.N) - region.gamma, 0], [0, region.gamma, 0]]
+                            row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
                         else:
+                            row_matrix[region.index][0][0] = row_matrix[region.index][0][0]-region.border_out[border][0]              
+                            row_matrix[region.index][1][1] = row_matrix[region.index][1][1]-region.border_out[border][1]
                             row_matrix[border.index] = region.border_InterCoeffs[border]
+            
             self.big_matrix[region.index] = row_matrix
-
+            
         # Copying the nested block matrix to a 2D matrix
         i_start = 0
         for row_region in self.big_matrix:
