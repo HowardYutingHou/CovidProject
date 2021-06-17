@@ -49,14 +49,14 @@ class RegionEpi(SIREpidemic):
 
     # s_i = susceptible inflow rate, s_o = susceptible outflow rate
     # i_i = infected inflow rate, i_o = infected outflow rate
-    def set_InterCoeffs(self, border, s_i, s_o, i_i, i_o):
-        out_list = [s_o,i_o]
-        coeff_matrix = [[s_i, 0, 0], [0, i_i, 0], [0, 0, 0]]
+    def set_InterCoeffs(self, border, s_i, s_o, i_i, i_o, r_i, r_o):
+        out_list = [s_o,i_o,r_o]
+        coeff_matrix = [[s_i, 0, 0], [0, i_i, 0], [0, 0, r_i]]
         self.border_InterCoeffs[border] = coeff_matrix
         self.border_out[border] = out_list 
         # here, set the other way around 
         if(not border.border_InterCoeffs[self]):
-            border.set_InterCoeffs(self, s_o, s_i, i_o, i_i)
+            border.set_InterCoeffs(self, s_o, s_i, i_o, i_i, r_o, r_i)
         # edit the diagonal matrix to include the move out rate from the specific region
             
     # maybe instead of doing city to city, we just lock down entire city?
