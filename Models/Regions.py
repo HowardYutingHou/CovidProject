@@ -44,8 +44,6 @@ class regions:
         # SIR population at time T0 is added to sir_over_time
         self.sir_over_time.append(self.column_matrix)
 
-    # a big ass problem: diagonal matrix is not even included in big_matrix,
-    # figure out the structure of row_matrix
     def construct_matrix(self):
         i = 0
         for region in self.regions:
@@ -54,14 +52,15 @@ class regions:
             diag_matrix = region.SIREpi()
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
-            
+
             # add the interaction matrices to their proper positions
             for border in list(region.border_InterCoeffs.keys()):
                 if border.index != region.index:
                     titf = region.border_lockdown[border]
                     if titf == 0:
-                        row_matrix[region.index][0][0] = row_matrix[region.index][0][0]-region.border_out[border][0]              
+                        row_matrix[region.index][0][0] = row_matrix[region.index][0][0]-region.border_out[border][0]   
                         row_matrix[region.index][1][1] = row_matrix[region.index][1][1]-region.border_out[border][1]
+                        row_matrix[region.index][2][2] = row_matrix[region.index][2][2]-region.border_out[border][2]
                         row_matrix[border.index] = region.border_InterCoeffs[border]
                     else:
                         if ((self.t >= titf[0]) & (self.t <= titf[1])): 
@@ -91,7 +90,8 @@ class regions:
                     i += 1
                 j_start += 3
             i_start += 3
-
+            
+    '''
     def construct_column(self):
         self.column_matrix = []
         for region in self.regions:
@@ -99,7 +99,17 @@ class regions:
             self.column_matrix.append([region.I / region.N])
             self.column_matrix.append([region.R / region.N])
         self.column_matrix = np.array(self.column_matrix)
-
+    '''  
+    # without normalization 
+    def construct_column(self):
+        self.column_matrix = []
+        for region in self.regions:
+            self.column_matrix.append([region.S])
+            self.column_matrix.append([region.I])
+            self.column_matrix.append([region.R])
+        self.column_matrix = np.array(self.column_matrix)
+    
+    '''
     # Henn Method: second order explicit
     def Heun_solver(self):
         N = int(self.Tf / self.h) + 1
@@ -122,27 +132,8 @@ class regions:
             # finally, update the column_matrix
             self.column_matrix = self.column_matrix + ((self.h) / 2) * (dudt + dudt_new)
             self.sir_over_time.append(self.column_matrix)
-
-    '''
-    def bruteforce_solver(self):
-        N = int(self.Tf/self.h) + 1
-        for t in range(1, N):
-            dudt = np.dot(self.onebig_matrix, self.column_matrix)
-            i = 0
-            # does update happend here?? should happen after the update of column matrix 
-            for region in self.regions:
-                region.S = dudt[i][0]
-                region.I = dudt[i+1][0]
-                region.R = dudt[i+2][0]
-                i += 3
-            # u(i+1) = du/dt + u(i); update the column_matrix
-            self.column_matrix = dudt + self.column_matrix
-            # update the big_matrix
-            self.construct_matrix()
-            self.sir_over_time.append(self.column_matrix)
-
-    '''
-
+            
+    
     # explicit euler
     def bruteforce_solver(self):
         N = int(self.Tf / self.h) + 1
@@ -160,6 +151,50 @@ class regions:
                 i += 3
             self.construct_matrix()
             self.sir_over_time.append(self.column_matrix)
+    '''
+
+    # Henn Method: without normalization 
+    def Heun_solver(self):
+        N = int(self.Tf / self.h) + 1
+        for t in range(1, N):
+            self.t += 1
+            # get A(ui)ui
+            dudt = np.dot(self.onebig_matrix, self.column_matrix)
+            # temporary u_i+1
+            un = self.column_matrix + self.h * dudt
+            # update the onebig_matrix
+            i = 0
+            for region in self.regions:
+                region.S = un[i][0]
+                region.I = un[i + 1][0]
+                region.R = un[i + 2][0]
+                i += 3
+            self.construct_matrix()
+            # get A(u_i+1)u_i+1
+            dudt_new = np.dot(self.onebig_matrix, un)
+            # finally, update the column_matrix
+            self.column_matrix = self.column_matrix + ((self.h) / 2) * (dudt + dudt_new)
+            self.sir_over_time.append(self.column_matrix)
+
+
+    # explicit euler without normalization
+    def bruteforce_solver(self):
+        N = int(self.Tf / self.h) + 1
+        for t in range(1, N):
+            dudt = (self.h) * np.dot(self.onebig_matrix, self.column_matrix)
+            # print(dudt)
+            i = 0
+            # u(i+1) = du/dt + u(i); update the column_matrix
+            self.column_matrix = dudt + self.column_matrix
+            # update the big_matrix
+            for region in self.regions:
+                region.S = self.column_matrix[i][0]
+                region.I = self.column_matrix[i + 1][0]
+                region.R = self.column_matrix[i + 2][0]
+                i += 3
+            self.construct_matrix()
+            self.sir_over_time.append(self.column_matrix)
+
 
     # visualization
 
@@ -186,4 +221,8 @@ class regions:
             legend.get_frame().set_alpha(0.5)
             name = self.regions[i].name
             plt.title(name)
+            fig1 = plt.gcf()
+            plt.draw()
             plt.show()
+            #fig1.savefig(name+'.png', dpi=100)
+            
