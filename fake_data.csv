@@ -1,0 +1,8 @@
+Region,S,I,R,N,beta,gamma,name
+Georgia,30000,100,0,30100,0.3,0.1,Georgia
+Florida,45000,300,0,45300,0.3,0.1,Florida
+Alabama,78000,600,0,78600,0.3,0.1,Alabama
+California,100000,400,0,100400,0.2,0.15,California
+Iowa,62000,500,0,62500,0.25,0.1,Iowa
+Texas,120000,500,0,120500,0.3,0.1,Texas
+New_York,80000,700,0,80700,0.2,0.2,New York
