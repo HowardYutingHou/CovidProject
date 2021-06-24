@@ -3,7 +3,7 @@ classdef oop_stateclass
     % state class contains intra-state epidemic SIR model and its solver. 
     
     properties
-        eps
+        %eps
         I0
         R0
         Ti
@@ -34,7 +34,7 @@ classdef oop_stateclass
     methods
         % Set S0
         function S0 = get.S0(obj)
-            S0 = 1-obj.eps;
+            S0 = 1-obj.I0-obj.R0;
         end
         
         % Set sigma
