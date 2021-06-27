@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 
 class regions:
-
     t = 0
     sir_over_time = []
 
@@ -49,7 +48,7 @@ class regions:
         for region in self.regions:
             # initialized a row of the big_matrix
             row_matrix = np.zeros(len(self.regions)).tolist()
-            diag_matrix = region.SIREpi()
+            diag_matrix = region.SIR()
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
 
@@ -58,24 +57,29 @@ class regions:
                 if border.index != region.index:
                     titf = region.border_lockdown[border]
                     if titf == 0:
-                        row_matrix[region.index][0][0] = row_matrix[region.index][0][0]-region.border_out[border][0]   
-                        row_matrix[region.index][1][1] = row_matrix[region.index][1][1]-region.border_out[border][1]
-                        row_matrix[region.index][2][2] = row_matrix[region.index][2][2]-region.border_out[border][2]
+                        row_matrix[region.index][0][0] -= region.border_out[border][0]
+                        row_matrix[region.index][1][1] -= region.border_out[border][1]
+                        row_matrix[region.index][2][2] -= region.border_out[border][2]
                         row_matrix[border.index] = region.border_InterCoeffs[border]
                     else:
-                        if ((self.t >= titf[0]) & (self.t <= titf[1])): 
-                            region.beta = region.beta/2
-                            row_matrix[region.index] = region.SIREpi()
-                            region.beta = region.beta*2
-                            #row_matrix[region.index] = [[-region.beta*region.I/(2*region.N), 0, 0], [0, region.beta*region.S / (2*region.N) - region.gamma, 0], [0, region.gamma, 0]]
+                        if ((self.t >= titf[0]) & (self.t <= titf[1])):
+                            region.beta = region.beta / 2
+                            row_matrix[region.index] = region.SIR()
+                            region.beta = region.beta * 2
+                            # row_matrix[region.index] = [[-region.beta*region.I/(2*region.N), 0, 0], [0, region.beta*region.S / (2*region.N) - region.gamma, 0], [0, region.gamma, 0]]
                             row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
                         else:
-                            row_matrix[region.index][0][0] = row_matrix[region.index][0][0]-region.border_out[border][0]              
-                            row_matrix[region.index][1][1] = row_matrix[region.index][1][1]-region.border_out[border][1]
+                            row_matrix[region.index][0][0] = row_matrix[region.index][0][0] - region.border_out[border][
+                                0]
+                            row_matrix[region.index][1][1] = row_matrix[region.index][1][1] - region.border_out[border][
+                                1]
+                            row_matrix[region.index][2][2] = row_matrix[region.index][2][2] - region.border_out[border][
+                                2]
+
                             row_matrix[border.index] = region.border_InterCoeffs[border]
-            
+
             self.big_matrix[region.index] = row_matrix
-            
+
         # Copying the nested block matrix to a 2D matrix
         i_start = 0
         for row_region in self.big_matrix:
@@ -90,7 +94,7 @@ class regions:
                     i += 1
                 j_start += 3
             i_start += 3
-            
+
     '''
     def construct_column(self):
         self.column_matrix = []
@@ -99,8 +103,9 @@ class regions:
             self.column_matrix.append([region.I / region.N])
             self.column_matrix.append([region.R / region.N])
         self.column_matrix = np.array(self.column_matrix)
-    '''  
-    # without normalization 
+    '''
+
+    # without normalization
     def construct_column(self):
         self.column_matrix = []
         for region in self.regions:
@@ -108,7 +113,7 @@ class regions:
             self.column_matrix.append([region.I])
             self.column_matrix.append([region.R])
         self.column_matrix = np.array(self.column_matrix)
-    
+
     '''
     # Henn Method: second order explicit
     def Heun_solver(self):
@@ -132,8 +137,8 @@ class regions:
             # finally, update the column_matrix
             self.column_matrix = self.column_matrix + ((self.h) / 2) * (dudt + dudt_new)
             self.sir_over_time.append(self.column_matrix)
-            
-    
+
+
     # explicit euler
     def bruteforce_solver(self):
         N = int(self.Tf / self.h) + 1
@@ -153,7 +158,7 @@ class regions:
             self.sir_over_time.append(self.column_matrix)
     '''
 
-    # Henn Method: without normalization 
+    # Henn Method: without normalization
     def Heun_solver(self):
         N = int(self.Tf / self.h) + 1
         for t in range(1, N):
@@ -176,7 +181,6 @@ class regions:
             self.column_matrix = self.column_matrix + ((self.h) / 2) * (dudt + dudt_new)
             self.sir_over_time.append(self.column_matrix)
 
-
     # explicit euler without normalization
     def bruteforce_solver(self):
         N = int(self.Tf / self.h) + 1
@@ -194,7 +198,6 @@ class regions:
                 i += 3
             self.construct_matrix()
             self.sir_over_time.append(self.column_matrix)
-
 
     # visualization
 
@@ -224,5 +227,4 @@ class regions:
             fig1 = plt.gcf()
             plt.draw()
             plt.show()
-            #fig1.savefig(name+'.png', dpi=100)
-            
+            # fig1.savefig(name+'.png', dpi=100)
