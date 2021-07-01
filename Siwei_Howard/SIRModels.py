@@ -20,9 +20,9 @@ class SIREndemic(object):
         pass
 
     def SIREnd(self, beta, gamma, mu, S, I, R, N):
-        dsdt = [mu/S - mu/N - beta * (1/N) * (I/N), 0, 0]
-        didt = [0, beta * (1/N) * (S/N) - (gamma + mu) * (1/N), 0]
-        drdt = [0, gamma * I / N, -mu/N]
+        dsdt = [mu*N/S - mu - beta * (I/N), 0, 0]
+        didt = [0, beta * (S/N) - (gamma + mu), 0]
+        drdt = [0, gamma, -mu]
         return [dsdt, didt, drdt]
 
 class SEIR(object):
