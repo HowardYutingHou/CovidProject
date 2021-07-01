@@ -3,16 +3,23 @@ classdef oop_stateclass
     % state class contains intra-state epidemic SIR model and its solver. 
     
     properties
+        name
         %eps
+        Tot % total population
         I0
         R0
-        Ti
-        Tf
+        %Ti
+        %Tf
         X
         t
         
+        alpha % reproduction/death rate
         nu  % recovery rate
         beta  % infection rate
+        
+        mobility % a matrix that stores all interaction (both outflow and 
+                 % inflow) for this state (denoted State1 in the dataset). 
+                 % The format of matrix is given in the dataset. 
     end
     
     properties (Dependent)
@@ -25,16 +32,13 @@ classdef oop_stateclass
         exp_imax
         s_inf
         real_imax
-        
-        % matrix form
-        intra_matrix
     end
     
     
     methods
         % Set S0
         function S0 = get.S0(obj)
-            S0 = 1-obj.I0-obj.R0;
+            S0 = obj.Tot-obj.I0-obj.R0;
         end
         
         % Set sigma
@@ -49,7 +53,7 @@ classdef oop_stateclass
         
         % Set dXdt
         function dXdt = get.dXdt(obj)
-            function dXdt = eqns(t,X,beta,nu)
+            function dXdt = eqns(X,beta,nu)
                 dS = -beta*X(1)*X(2);
                 dI = beta*X(1)*X(2)-nu*X(2);
                 dR = nu*X(2);

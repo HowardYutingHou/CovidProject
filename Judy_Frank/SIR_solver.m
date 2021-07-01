@@ -1,10 +1,10 @@
-function x = SIR_solver(N_c, N_r, Local, Mobility, u0, dt, t0, tf)
+function x = SIR_solver(N_c, N_r, Local, u0, dt, t0, tf, fake_inter, obj_regs)
 
 t = (tf-t0)/dt;
 x = zeros(N_r*N_c,t);
 x(:,1) = u0;
 
-[A_L, M]= assembleA_Linear(N_c, N_r, Local, Mobility);
+[A_L, M]= assembleA_Linear(N_c, N_r, fake_inter, obj_regs);
 
 u2 = u0 + dt.*(A_L*u0 + M*u0 + assembleA_NL(N_c, N_r, Local, u0));
 u1 = u0 + dt/2.*(A_L*u0 + M*u0 + assembleA_NL(N_c, N_r, Local, u0) + A_L*u2 + M*u2 + assembleA_NL(N_c, N_r, Local, u2));
