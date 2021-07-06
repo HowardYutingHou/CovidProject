@@ -9,7 +9,7 @@ N_c = 3;
 N_r = 7;
 
 t0 = 0;
-tf = 180;
+tf = 100;
 dt = 1;
 
 % First, create an empty vector whose elements are individual states (objs of
@@ -30,14 +30,14 @@ end
 
 
 %%%%% Solve the problem
-[A_L,M] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs);
+[A_L,M, Local, u0] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs);
 A_NL = assembleA_NL(N_c, N_r, Local, u0);
 
 % Solve the system
-soln = SIR_solver(N_c, N_r, Local, u0, dt, t0, tf, fake_inter, obj_regs);
+soln = SIR_solver(N_c, N_r, u0, dt, t0, tf, fake_inter, obj_regs)
 
 % Plot the solution
-region = 7; % choose which region to plot
+region = 6; % choose which region to plot
 
 tvals = linspace(t0, tf, (tf-t0)/dt);
 
@@ -55,8 +55,9 @@ legend({'Susceptibles','Infected','Recovered'},'Location','northeast')
 title(obj_regs(region).name, 'FontSize',18);
 
 
-
-
+% Get mobility matrices in csv files
+writematrix(M, 'inter_state.csv');
+writematrix(M+A_L, 'total_mobility.csv');
 
 
 

@@ -1,4 +1,4 @@
-function [A_L, M, Local] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs)
+function [A_L, M, Local, u0] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs)
 A_L = zeros(N_c*N_r, N_c*N_r);
 
 % Local = [alpha1, alpha2, alpha3, alpha4, alpha5, alpha6; 
@@ -15,6 +15,8 @@ for i = 1:N_c:length(u0)
     u0(i+2) = obj_regs(round((i+N_c-1)/3)).R0;
 end
 
+
+%%%%% Intra-state mobility (SIR dynamics)
 j = 0;
 for i = 1:N_r
     ii = i + j;
@@ -24,7 +26,9 @@ for i = 1:N_r
     j = j + N_c - 1;
 end
 
+
 %%%%% Mobility matrix
+
 % Concatenate State1 and State2 columns in fake_inter to create pairs for
 % keys. Turn 3-8th columns into array to get mobility info in rows.
 pair = strcat(fake_inter.State1, {' '}, fake_inter.State2);
@@ -33,15 +37,8 @@ mpara = table2array(fake_inter(:, 3:8));
 % mpara is in the form [s_i s_o i_i i_o r_i r_o]
 % s_i is from State2 to State1; s_o is from State1 to State2
 
-% Use struct to match each pair to mobility parameters
-% f_i = struct;
-% for i = 1:size(mpara, 1)
-%     f_i(i).name = pair(i);
-%     f_i(i).data = mpara(i, :);
-% end
+%%% OUTWARD flow (main diagonal)
 
-% create vector for outward mobility for all regions -> become main
-% diagonal for mobility matrix
 out1 = zeros(N_c*N_r, 1);
 ct = 1;
 for st1 = 1:length(obj_regs)-1
@@ -76,83 +73,51 @@ end
 out = out1 + out2; %%%%%% Vector of main diagonal for mobility matrix!!
 M = diag(out);
 
+%%% INWARD flow
 
-% % region 1
-% % M(1,1) = -Mobility(1,1)-Mobility(1,2)
-% % M(2,2) = -Mobility(2,1)-Mobility(2,2)
-% % M(3,3) = -Mobility(3,1)-Mobility(3,2)
-% % M(4,1) = Mobility(1,1)
-% % M(5,2) = Mobility(2,1)
-% % M(6,3) = Mobility(3,1)
-% % M(7,1) = Mobility(1,2)
-% % M(8,2) = Mobility(2,2)
-% % M(9,3) = Mobility(3,2)
-% 
-% k = 1;
-% for i = 1:N_r-1             % i = 1:2
-%     for j = 1:N_r           % j = 1:3
-%         if j == k           % Check if it is the main diagonal
-%             M(k,j) = -Mobility(j,i)-Mobility(j,i+1);
-%             M(k+1,j+1) = -Mobility(j+1,i)-Mobility(j+1,i+1);
-%             M(k+2,j+2) = -Mobility(j+2,i)-Mobility(j+2,i+1);
-%             k = k + N_r;
-%         end
-%         M(k,j) = Mobility(j,i);
-%         k = k + 1;
-%     end
-% end
-% 
-%         
-% % region 2
-% % M(1,4) = Mobility(1,3)
-% % M(2,5) = Mobility(2,3)
-% % M(3,6) = Mobility(3,3)
-% % M(4,4) = -Mobility(1,3)-Mobility(1,4)
-% % M(5,5) = -Mobility(2,3)-Mobility(2,4)
-% % M(6,6) = -Mobility(3,3)-Mobility(3,4)
-% % M(7,4) = Mobility(1,4)
-% % M(8,5) = Mobility(2,4)
-% % M(9,6) = Mobility(3,4)
-% 
-% k = 1;
-% for i = N_r:2*(N_r-1)       % i = 3:4
-%     for j = 1:N_r           % j = 1:3
-%         j_2 = j + N_r;      % j_2 = 4:6
-%         if j_2 == k
-%             M(k,j_2) = -Mobility(j,i)-Mobility(j,i+1);
-%             M(k+1,j_2+1) = -Mobility(j+1,i)-Mobility(j+1,i+1);
-%             M(k+2,j_2+2) = -Mobility(j+2,i)-Mobility(j+2,i+1);
-%             k = k + N_r;
-%         end
-%         M(k,j_2) = Mobility(j,i);
-%         k = k + 1;
-%     end
-% end
-% 
-% 
-% % region 3
-% % M(1,7) = Mobility(1,5)
-% % M(2,8) = Mobility(2,5)
-% % M(3,9) = Mobility(3,5)
-% % M(4,7) = Mobility(1,6)
-% % M(5,8) = Mobility(2,6)
-% % M(6,9) = Mobility(3,6)
-% % M(7,7) = -Mobility(1,5)-Mobility(1,6)
-% % M(8,8) = -Mobility(2,5)-Mobility(2,6)
-% % M(9,9) = -Mobility(3,5)-Mobility(3,6)
-% 
-% k = 1;
-% last = true;
-% for i = 2*(N_r-1)+1:2*N_r       % i = 5:6
-%     for j = 1:N_r               % j = 1:3
-%         j_3 = j + 2*N_r;        % j_3 = 7:9
-%         if last
-%             M(j_3,j_3) = -Mobility(j,i)-Mobility(j,i+1);
-%             M(j_3+1,j_3+1) = -Mobility(j+1,i)-Mobility(j+1,i+1);
-%             M(j_3+2,j_3+2) = -Mobility(j+2,i)-Mobility(j+2,i+1);
-%             last = false;
-%         end
-%         M(k,j_3) = Mobility(j,i);
-%         k = k + 1;
-%     end
-% end
+% First construct portion below main diagonal. Use pair and s_o, i_o, r_o
+% info. Fill column-wise.
+inw = zeros(N_c*N_r, N_c*N_r);
+
+% individual small diagonal matrix on the x-z plane
+pair3d_out = zeros(N_c, length(pair), N_c);
+for i = 1: length(pair)
+    pair3d_out(:, i, :) = diag([mpara(i, 2); mpara(i, 4); mpara(i, 6)]);
+end
+pair3d_in = zeros(N_c, length(pair), N_c);
+for i = 1: length(pair)
+    pair3d_in(:, i, :) = diag([mpara(i, 1); mpara(i, 3); mpara(i, 5)]);
+end
+
+ct = 1;
+% Below diagonal (fill in column-wise, use pair and s_o, i_o, r_o)
+for c = 1:N_c:length(inw)-N_c
+    for r = c+N_c:N_c:length(inw)-N_c+1
+        if strcmpi(strcat(obj_regs(round((c+N_c)/N_c)).name, {' '}, obj_regs(round((r+N_c)/N_c)).name), pair(ct))
+            inw(r:r+2, c:c+2) = pair3d_out(:, ct,:);
+        else
+            error('Incorrect inter-state movement info!');
+        end
+        ct = ct+1;
+    end
+end
+
+ct = 1;
+% Above diagonal (fill in row-wise, use pair2 and s_i, r_i, r_I)
+for r = 1: N_c: length(inw)-2*N_c+1
+    for c = r+N_c:N_c:length(inw)-N_c+1
+        if strcmpi(strcat(obj_regs(round((c+N_c)/N_c)).name, {' '}, obj_regs(round((r+N_c)/N_c)).name), pair2(ct))
+            inw(r:r+2, c:c+2) = pair3d_in(:, ct,:);
+        else
+            msg = 'Incorrect inter-state movement info! ' + string(obj_regs(round((c+N_c)/N_c)).name) + ' ' + string(obj_regs(round((r+N_c)/N_c)).name)+ ' ' + string(pair2(ct)); 
+            error(msg);
+        end
+        ct = ct+1;
+    end
+end
+
+% M = M+inw;
+
+% Test theoremm without mobility
+M = zeros(N_c*N_r, N_c*N_r);
+
