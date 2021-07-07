@@ -4,7 +4,7 @@ A_L = zeros(N_c*N_r, N_c*N_r);
 % Local = [alpha1, alpha2, alpha3, alpha4, alpha5, alpha6; 
 %             beta1, beta2, beta3, beta4, beta5, beta6; 
 %             nu1, nu2, nu3, nu4, nu5, nu6]
-Local = [obj_regs.alpha; obj_regs.beta; obj_regs.nu];
+Local = [obj_regs.mu; obj_regs.beta; obj_regs.nu];
 
 % Initial compartmental populations for each region in form of a vector
 % [S1; I1; R1; S2; I2; R2; ...]
@@ -20,9 +20,9 @@ end
 j = 0;
 for i = 1:N_r
     ii = i + j;
-    A_L(ii,ii) = Local(1,i); % alpha (beta is for nonlinear part)
-    A_L(ii+1,ii+1) = -Local(3,i); % gamma
-    A_L(ii+2,ii+1) = Local(3,i); % gamma
+    A_L(ii,ii) = -Local(1,i); % -mu*S (death rate) (beta is for nonlinear part)
+    A_L(ii+1,ii+1) = -Local(3,i) - Local(1,i); % -gamma*I - mu*I
+    A_L(ii+2,ii+1) = Local(3,i) - Local(1,i); % gamma - mu*R
     j = j + N_c - 1;
 end
 
@@ -116,8 +116,8 @@ for r = 1: N_c: length(inw)-2*N_c+1
     end
 end
 
-M = M+inw;
+% M = M+inw;
 
 % Test theoremm without mobility
-% M = zeros(N_c*N_r, N_c*N_r);
+M = zeros(N_c*N_r, N_c*N_r);
 
