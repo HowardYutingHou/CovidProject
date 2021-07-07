@@ -1,4 +1,4 @@
-function [A_NL] = assembleA_NL(N_c, N_r, Local, Region)
+function [A_NL] = assembleA_NL(N_c, N_r, Local, Region, obj_regs)
 %
 % This function sets up the non-linear portion of the matrix A for the
 % epidemic SIR model.
@@ -18,8 +18,8 @@ A_NL = zeros(N_c*N_r, 1);
 
 for i = 1:N_r
     j = N_c*(i-1)+1;
-    A_NL(j) = -Local(2, i)* Region(j)*Region(j+1);
-    A_NL(j+1) = Local(2, i)* Region(j)*Region(j+1);
+    A_NL(j) = -Local(2, i)* Region(j)*Region(j+1)/obj_regs(i).Tot;
+    A_NL(j+1) = Local(2, i)* Region(j)*Region(j+1)/obj_regs(i).Tot;
     A_NL(j+2) = 0;
 end
 

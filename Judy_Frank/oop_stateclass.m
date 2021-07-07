@@ -74,7 +74,6 @@ classdef oop_stateclass
                
         % Solver
         function [t, soln, exp_imax, s_inf, real_imax]=SIR_RKODE45Epi(obj)
-            
             if (obj.discr>1)
              a = 0;
              b = 1/obj.sigma;

@@ -116,8 +116,8 @@ for r = 1: N_c: length(inw)-2*N_c+1
     end
 end
 
-% M = M+inw;
+M = M+inw;
 
 % Test theoremm without mobility
-M = zeros(N_c*N_r, N_c*N_r);
+% M = zeros(N_c*N_r, N_c*N_r);
 

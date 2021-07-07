@@ -4,6 +4,7 @@ fake_data = readtable('fake_data.csv');
 % note: cannot perform operations on individual cells directly. Rather, get
 % the columns and then get individual element. eg. fake_inter.s_o(3,1)*8
 
+tStart = cputime;
 % Setup
 N_c = 3;
 N_r = 7;
@@ -31,13 +32,13 @@ end
 
 %%%%% Solve the problem
 [A_L,M, Local, u0] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs);
-A_NL = assembleA_NL(N_c, N_r, Local, u0);
+A_NL = assembleA_NL(N_c, N_r, Local, u0, obj_regs);
 
 % Solve the system
-soln = SIR_solver(N_c, N_r, u0, dt, t0, tf, fake_inter, obj_regs)
+soln = SIR_solver(N_c, N_r, u0, dt, t0, tf, fake_inter, obj_regs);
 
 % Plot the solution
-region = 6; % choose which region to plot
+region = 2; % choose which region to plot
 
 tvals = linspace(t0, tf, (tf-t0)/dt);
 
@@ -54,6 +55,14 @@ plot(tvals, Rvals, 'x-', 'LineWidth', 2);
 legend({'Susceptibles','Infected','Recovered'},'Location','northeast')
 title(obj_regs(region).name, 'FontSize',18);
 
+% Print max infected number 
+% real_imax = max(Ivals)
+% if obj_regs(region).sigma > 1
+%     s_e = 1/obj_regs(region).sigma
+%     i_e = obj_regs(region).sigma
+% end
+
+tEnd = cputime - tStart
 
 % Get mobility matrices in csv files
 writematrix(M, 'inter_state.csv');
