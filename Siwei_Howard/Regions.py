@@ -28,12 +28,13 @@ class regions:
             self.regions.append(region)
             i += 1
 
-        self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
+        #self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
         # Populate the lockdown matrix
+        '''
         for region in self.regions:
             for border in list(region.border_lockdown.keys()):
                 self.lockdown_matrix[region.index][border.index] = region.border_lockdown[border]
-
+        '''
         self.big_matrix = [0] * len(self.regions)
         # initialize the two dimensional matrix with numpy
         self.onebig_matrix = np.zeros((3 * len(self.regions), 3 * len(self.regions)))
@@ -51,31 +52,28 @@ class regions:
             diag_matrix = region.SIR()
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
-
-            # add the interaction matrices to their proper positions
-            for border in list(region.border_InterCoeffs.keys()):
-                if border.index != region.index:
-                    titf = region.border_lockdown[border]
-                    if titf == 0:
-                        row_matrix[region.index][0][0] -= region.border_out[border][0]
-                        row_matrix[region.index][1][1] -= region.border_out[border][1]
-                        row_matrix[region.index][2][2] -= region.border_out[border][2]
-                        row_matrix[border.index] = region.border_InterCoeffs[border]
-                    else:
-                        if ((self.t >= titf[0]) & (self.t <= titf[1])):
-                            region.beta = region.beta / 2
-                            row_matrix[region.index] = region.SIR()
-                            region.beta = region.beta * 2
-                            # row_matrix[region.index] = [[-region.beta*region.I/(2*region.N), 0, 0], [0, region.beta*region.S / (2*region.N) - region.gamma, 0], [0, region.gamma, 0]]
+            
+            titf = region.lockdown
+            
+            if ((self.t > titf[0]) & (self.t <= titf[1])):
+                
+                region.beta = region.beta / 2
+                row_matrix[region.index] = region.SIR()
+                region.beta = region.beta * 2  # recover it back to what it was
+                for border in list(region.border_InterCoeffs.keys()):
+                    if border.index != region.index:
+                        row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+                        
+            else:
+                for border in list(region.border_InterCoeffs.keys()):
+                    if border.index != region.index:
+                        titf = border.lockdown
+                        if ((self.t > titf[0]) & (self.t <= titf[1])):
                             row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
                         else:
-                            row_matrix[region.index][0][0] = row_matrix[region.index][0][0] - region.border_out[border][
-                                0]
-                            row_matrix[region.index][1][1] = row_matrix[region.index][1][1] - region.border_out[border][
-                                1]
-                            row_matrix[region.index][2][2] = row_matrix[region.index][2][2] - region.border_out[border][
-                                2]
-
+                            row_matrix[region.index][0][0] -= region.border_out[border][0]
+                            row_matrix[region.index][1][1] -= region.border_out[border][1]
+                            row_matrix[region.index][2][2] -= region.border_out[border][2]
                             row_matrix[border.index] = region.border_InterCoeffs[border]
 
             self.big_matrix[region.index] = row_matrix
@@ -224,7 +222,9 @@ class regions:
             legend.get_frame().set_alpha(0.5)
             name = self.regions[i].name
             plt.title(name)
+            '''
             fig1 = plt.gcf()
             plt.draw()
             plt.show()
-            # fig1.savefig(name+'.png', dpi=100)
+            fig1.savefig(name+'new.png', dpi=100)
+            '''

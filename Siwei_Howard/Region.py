@@ -22,7 +22,7 @@ class RegionEpi(SIREpidemic):
     # Key is a tuple containing the start date and end date of lockdown.
     # border_lockdown = {}
 
-    def __init__(self, S, I, R, N, beta, gamma, name):
+    def __init__(self, S, I, R, N, beta, gamma, name, lockdown):
         self.S = S
         self.I = I
         self.R = R
@@ -30,16 +30,17 @@ class RegionEpi(SIREpidemic):
         self.beta = beta
         self.gamma = gamma
         self.name = name
+        self.lockdown = lockdown
         self.border_InterCoeffs = {}
         self.border_out = {}
-        self.border_lockdown = {}
-
+        #self.border_lockdown = {}
+        
         super(RegionEpi, self).__init__()
 
     def set_borders(self, *borders):
         for border in borders:
             self.border_InterCoeffs[border] = {}  # can initialize to be anything, which is to be changed later.
-            self.border_lockdown[border] = 0  # default 0 if no lockdown
+            #self.border_lockdown[border] = 0  # default 0 if no lockdown
 
     def __call__(self):
         print(self.name)
@@ -60,11 +61,13 @@ class RegionEpi(SIREpidemic):
         # edit the diagonal matrix to include the move out rate from the specific region
 
     # maybe instead of doing city to city, we just lock down entire city?
+    # which means no need for parameter border here and no (if not()) whole thing
+    '''
     def lockdown(self, border, ti, tf):
         self.border_lockdown[border] = [ti, tf]
         if (not border.border_lockdown[self]):
             border.lockdown(self, ti, tf)
-
+    '''
 
 from SIRModels import SIREpidemic
 
@@ -91,7 +94,7 @@ class RegionEnd(SIREndemic):
     # Key is a tuple containing the start date and end date of lockdown.
     # border_lockdown = {}
 
-    def __init__(self, S, I, R, N, beta, gamma, mu, name):
+    def __init__(self, S, I, R, N, beta, gamma, mu, name, lockdown):
         self.S = S
         self.I = I
         self.R = R
@@ -100,16 +103,17 @@ class RegionEnd(SIREndemic):
         self.gamma = gamma
         self.mu = mu
         self.name = name
+        self.lockdown = lockdown
         self.border_InterCoeffs = {}
         self.border_out = {}
-        self.border_lockdown = {}
+        #self.border_lockdown = {}
 
         super(RegionEnd, self).__init__()
 
     def set_borders(self, *borders):
         for border in borders:
             self.border_InterCoeffs[border] = {}  # can initialize to be anything, which is to be changed later.
-            self.border_lockdown[border] = 0  # default 0 if no lockdown
+            #self.border_lockdown[border] = 0  # default 0 if no lockdown
 
     def __call__(self):
         print(self.name)
@@ -129,8 +133,10 @@ class RegionEnd(SIREndemic):
             border.set_InterCoeffs(self, s_o, s_i, i_o, i_i, r_o, r_i)
         # edit the diagonal matrix to include the move out rate from the specific region
 
+    '''
     # maybe instead of doing city to city, we just lock down entire city?
     def lockdown(self, border, ti, tf):
         self.border_lockdown[border] = [ti, tf]
         if (not border.border_lockdown[self]):
             border.lockdown(self, ti, tf)
+    '''
