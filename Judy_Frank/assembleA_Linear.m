@@ -10,9 +10,9 @@ Local = [obj_regs.mu; obj_regs.beta; obj_regs.nu];
 % [S1; I1; R1; S2; I2; R2; ...]
 u0 = zeros(N_c*N_r, 1);
 for i = 1:N_c:length(u0)
-    u0(i) = obj_regs(round((i+N_c-1)/3)).S0;
-    u0(i+1) = obj_regs(round((i+N_c-1)/3)).I0;
-    u0(i+2) = obj_regs(round((i+N_c-1)/3)).R0;
+    u0(i) = obj_regs(round((i+N_c-1)/3)).S;
+    u0(i+1) = obj_regs(round((i+N_c-1)/3)).I;
+    u0(i+2) = obj_regs(round((i+N_c-1)/3)).R;
 end
 
 
@@ -63,7 +63,6 @@ for st2 = 2:length(obj_regs)
                 out2(ct) = out2(ct) - mpara(j, 1); % use outward mobility (s_i)
                 out2(ct+1) = out2(ct+1) - mpara(j, 3); % i_i
                 out2(ct+2) = out2(ct+2) - mpara(j, 5); % r_i
-                % disp(pair2(j))
             end
         end
     end
@@ -116,8 +115,8 @@ for r = 1: N_c: length(inw)-2*N_c+1
     end
 end
 
-% M = M+inw;
+M = M+inw;
 
 % Test theoremm without mobility
-M = zeros(N_c*N_r, N_c*N_r);
+% M = zeros(N_c*N_r, N_c*N_r);
 
