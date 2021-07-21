@@ -28,7 +28,7 @@ class regions:
             self.regions.append(region)
             i += 1
 
-        #self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
+        # self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
         # Populate the lockdown matrix
         '''
         for region in self.regions:
@@ -48,22 +48,25 @@ class regions:
         i = 0
         for region in self.regions:
             # initialized a row of the big_matrix
+            if(self.t > region.vaccination):
+                region.gamma += 0.005;
+
             row_matrix = np.zeros(len(self.regions)).tolist()
             diag_matrix = region.SIR()
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
-            
+
             titf = region.lockdown
-            
+
             if ((self.t > titf[0]) & (self.t <= titf[1])):
-                
+
                 region.beta = region.beta / 2
                 row_matrix[region.index] = region.SIR()
                 region.beta = region.beta * 2  # recover it back to what it was
                 for border in list(region.border_InterCoeffs.keys()):
                     if border.index != region.index:
                         row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-                        
+
             else:
                 for border in list(region.border_InterCoeffs.keys()):
                     if border.index != region.index:
@@ -135,8 +138,6 @@ class regions:
             # finally, update the column_matrix
             self.column_matrix = self.column_matrix + ((self.h) / 2) * (dudt + dudt_new)
             self.sir_over_time.append(self.column_matrix)
-
-
     # explicit euler
     def bruteforce_solver(self):
         N = int(self.Tf / self.h) + 1
