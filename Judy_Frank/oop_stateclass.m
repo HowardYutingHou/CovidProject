@@ -1,3 +1,4 @@
+
 classdef oop_stateclass
     
     % state class contains intra-state endemic SIR model and its solver. 
@@ -8,7 +9,7 @@ classdef oop_stateclass
         S
         I
         R
-        Tot
+%         Tot
         
         mu % reproduction/death rate
         nu  % recovery rate
@@ -24,15 +25,24 @@ classdef oop_stateclass
     
     
     properties (Dependent)
-%         Tot % total population
+        Tot % total population
         sigma
     end
     
     
     methods
-%         function Tot = get.Tot(obj)
-%             Tot = obj.S + obj.I + obj.R;
-%         end
+        function obj = setS(obj,val)
+            obj.S = val;
+        end
+        function obj = setI(obj,val)
+            obj.I = val;
+        end
+        function obj = setR(obj,val)
+            obj.R = val;
+        end
+        function a = get.Tot(obj)
+            a = obj.S + obj.I + obj.R;
+        end
         
         % Set sigma
         function sigma = get.sigma(obj)

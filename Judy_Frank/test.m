@@ -31,15 +31,15 @@ for i = 1:length(obj_regs)
     obj_regs(i).nu = fake_data.gamma(i);
     
     % set lockdown start & end day
-    obj_regs(i).ld0 = 30;
-    obj_regs(i).ldf = 70;
+    obj_regs(i).ld0 = 0;
+    obj_regs(i).ldf = 0;
 end
 
 
 %%%%% Solve the problem
 % Construct matrix
 [A_L,M, Local, u0] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs);
-% A_NL = assembleA_NL(N_c, N_r, Local, u0, obj_regs);
+A_NL = assembleA_NL(N_c, N_r, obj_regs, t);
 
 % Solve the system
 soln = SIR_solver(N_c, N_r, u0, dt, t0, tf, fake_inter, obj_regs);
@@ -85,11 +85,6 @@ fprintf('\nCPU time: %s \n', tEnd);
 % Get mobility matrices in csv files
 writematrix(M, 'inter_state.csv');
 writematrix(M+A_L, 'total_mobility.csv');
-
-
-
-
-
 
 
 

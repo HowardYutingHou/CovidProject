@@ -20,9 +20,13 @@ end
 j = 0;
 for i = 1:N_r
     ii = i + j;
-    A_L(ii,ii) = -Local(1,i); % -mu*S (death rate) (beta is for nonlinear part)
-    A_L(ii+1,ii+1) = -Local(3,i) - Local(1,i); % -gamma*I - mu*I
-    A_L(ii+2,ii+1) = Local(3,i) - Local(1,i); % gamma - mu*R
+%     A_L(ii,ii) = -Local(1,i); % -mu*S (death rate) (beta is for nonlinear part)
+%     A_L(ii+1,ii+1) = -Local(3,i) - Local(1,i); % -gamma*I - mu*I
+%     A_L(ii+2,ii+1) = -Local(1,i); % -mu*R
+    A_L(ii,ii) = -obj_regs(i).mu;
+    A_L(ii+1,ii+1) = -obj_regs(i).nu - obj_regs(i).mu;
+    A_L(ii+2, ii+1) = obj_regs(i).nu;
+    A_L(ii+2,ii+2) = - obj_regs(i).mu;
     j = j + N_c - 1;
 end
 
@@ -119,4 +123,3 @@ M = M+inw;
 
 % Test theoremm without mobility
 % M = zeros(N_c*N_r, N_c*N_r);
-
