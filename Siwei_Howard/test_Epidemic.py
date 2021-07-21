@@ -78,13 +78,13 @@ class Timer:
 
 
 
-# because installation always false 
+# because installation always false
 timer = Timer()
 
 #timer.start()
 # use your own files
-df = pd.read_csv(r"C:\Users\Administrator\Desktop\Models\data\fake_data.csv")
-df_dict = pd.read_csv(r"C:\Users\Administrator\Desktop\Models\data\fake_inter.csv")
+df = pd.read_csv(r"/Users/yutinghou/Desktop/fake_data.csv")
+df_dict = pd.read_csv(r"/Users/yutinghou/Desktop/fake_inter.csv")
 
 #df = pd.read_csv(r"C:\Users\Administrator\Desktop\3_data.csv")
 #df_dict = pd.read_csv(r"C:\Users\Administrator\Desktop\3_inter.csv")
@@ -112,13 +112,22 @@ for i in range(0, df_dict.shape[0]):
     '''
     df_dict['List'].iloc[i] = empty
 
+'''
+df['lockdown'] = df['S'] * 0
+for i in range(0, df.shape[0]):
+    empty = []
+    empty.append(df['lockdown_start'][i])
+    empty.append(df['lockdown_end'][i])
+    df['lockdown'].iloc[i] = empty
+'''
+
 help_dict = df_dict.set_index('Pair')['List'].to_dict()
 
 timer.start()
 
 list_of_regions = []
 for i in range(0, df.shape[0]):
-    r = RegionEpi(df['S'][i], df['I'][i], df['R'][i], df['N'][i], df['beta'][i], df['gamma'][i], df['name'][i], [0,0])
+    r = RegionEpi(df['S'][i], df['I'][i], df['R'][i], df['N'][i], df['beta'][i], df['gamma'][i], df['name'][i], [df['lockdown_start'][i], df['lockdown_end'][i]], df['vaccination'][i])
     list_of_regions.append(r)
 
 for j in list_of_regions:
