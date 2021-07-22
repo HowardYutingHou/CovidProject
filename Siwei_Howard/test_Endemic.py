@@ -8,8 +8,8 @@ import pandas as pd
 #timer.start()
 
 # use your own files
-df = pd.read_csv(r"C:\Users\Administrator\Desktop\Models\data\fake_data.csv")
-df_dict = pd.read_csv(r"C:\Users\Administrator\Desktop\Models\data\fake_inter.csv")
+df = pd.read_csv(r"C:\Users\Administrator\Desktop\data\fake_data.csv")
+df_dict = pd.read_csv(r"C:\Users\Administrator\Desktop\data\fake_inter.csv")
 
 
 # Turn this into a name dictionary
@@ -18,7 +18,7 @@ df_dict['Pair'] = df_dict['State1'] + " " + df_dict['State2']
 df_dict['List'] = df_dict['Pair']
 for i in range(0, df_dict.shape[0]):
     empty = []
-    '''
+    
     empty.append(df_dict['s_i'][i])
     empty.append(df_dict['s_o'][i])
     empty.append(df_dict['i_i'][i])
@@ -32,14 +32,14 @@ for i in range(0, df_dict.shape[0]):
     empty.append(0)
     empty.append(0)
     empty.append(0)
-    
+    '''
     df_dict['List'].iloc[i] = empty
 
 help_dict = df_dict.set_index('Pair')['List'].to_dict()
 
 list_of_regions = []
 for i in range(0, df.shape[0]):
-    r = RegionEnd(df['S'][i], df['I'][i], df['R'][i], df['N'][i], df['beta'][i], df['gamma'][i], df['mu'][i], df['name'][i],[0,0])
+    r = RegionEnd(df['S'][i], df['I'][i], df['R'][i], df['N'][i], df['beta'][i], df['gamma'][i], df['mu'][i], df['rho'][i], df['name'][i], [0,0], df['vaccination'][i])
     list_of_regions.append(r)
 
 for j in list_of_regions:
@@ -63,7 +63,7 @@ for main in range(0, len(list_of_regions) - 1):
 
 
 input_list = []
-input_list.append(1800)
+input_list.append(100)
 input_list.append(1)
 for r in list_of_regions:
     input_list.append(r)
