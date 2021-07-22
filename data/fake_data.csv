@@ -1,8 +1,8 @@
-Region,S,I,R,N,beta,gamma,name,mu,lockdown_start,lockdown_end,vaccination
-Georgia,30000,100,0,30100,0.3,0.1,Georgia,0.05,40,90,80
-Florida,45000,300,0,45300,0.3,0.1,Florida,0.75,30,50,100
-Alabama,78000,600,0,78600,0.3,0.1,Alabama,0.1,0,0,40
-California,100000,400,0,100400,0.2,0.15,California,0.22,100,120,70
-Iowa,62000,500,0,62500,0.25,0.1,Iowa,0.18,70,150,130
-Texas,120000,500,0,120500,0.3,0.1,Texas,0.2,90,100,150
-New_York,80000,700,0,80700,0.2,0.2,New York,0.12,110,140,140
+Region,S,I,R,N,beta,gamma,name,mu,rho,lockdown_start,lockdown_end,vaccination
+Georgia,30000,100,0,30100,0.3,0.1,Georgia,0.05,0.01,40,90,80
+Florida,45000,300,0,45300,0.3,0.1,Florida,0.75,0.02,30,50,100
+Alabama,78000,600,0,78600,0.3,0.1,Alabama,0.1,0.005,0,0,90
+California,100000,400,0,100400,0.2,0.15,California,0.22,0.025,100,120,50
+Iowa,62000,500,0,62500,0.25,0.1,Iowa,0.18,0.005,70,150,70
+Texas,120000,500,0,120500,0.3,0.1,Texas,0.2,0.01,90,100,150
+New_York,80000,700,0,80700,0.2,0.2,New York,0.12,0.03,110,140,40

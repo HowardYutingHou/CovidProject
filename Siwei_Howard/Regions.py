@@ -28,7 +28,7 @@ class regions:
             self.regions.append(region)
             i += 1
 
-        # self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
+        #self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
         # Populate the lockdown matrix
         '''
         for region in self.regions:
@@ -48,25 +48,27 @@ class regions:
         i = 0
         for region in self.regions:
             # initialized a row of the big_matrix
-            if(self.t > region.vaccination):
-                region.gamma += 0.005;
-
             row_matrix = np.zeros(len(self.regions)).tolist()
-            diag_matrix = region.SIR()
+            
+            if self.t>region.vac_time:
+                diag_matrix = region.SIR_vaccine()
+            else:
+                diag_matrix = region.SIR()
+            
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
-
+            
             titf = region.lockdown
-
+            
             if ((self.t > titf[0]) & (self.t <= titf[1])):
-
+                
                 region.beta = region.beta / 2
                 row_matrix[region.index] = region.SIR()
                 region.beta = region.beta * 2  # recover it back to what it was
                 for border in list(region.border_InterCoeffs.keys()):
                     if border.index != region.index:
                         row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-
+                        
             else:
                 for border in list(region.border_InterCoeffs.keys()):
                     if border.index != region.index:
@@ -138,6 +140,8 @@ class regions:
             # finally, update the column_matrix
             self.column_matrix = self.column_matrix + ((self.h) / 2) * (dudt + dudt_new)
             self.sir_over_time.append(self.column_matrix)
+
+
     # explicit euler
     def bruteforce_solver(self):
         N = int(self.Tf / self.h) + 1
@@ -172,6 +176,7 @@ class regions:
                 region.S = un[i][0]
                 region.I = un[i + 1][0]
                 region.R = un[i + 2][0]
+                region.N = region.S + region.I + region.R
                 i += 3
             self.construct_matrix()
             # get A(u_i+1)u_i+1
@@ -194,6 +199,7 @@ class regions:
                 region.S = self.column_matrix[i][0]
                 region.I = self.column_matrix[i + 1][0]
                 region.R = self.column_matrix[i + 2][0]
+                region.N = region.S + region.I + region.R
                 i += 3
             self.construct_matrix()
             self.sir_over_time.append(self.column_matrix)
@@ -223,9 +229,9 @@ class regions:
             legend.get_frame().set_alpha(0.5)
             name = self.regions[i].name
             plt.title(name)
-            '''
+            
             fig1 = plt.gcf()
             plt.draw()
             plt.show()
-            fig1.savefig(name+'new.png', dpi=100)
-            '''
+            fig1.savefig(name+' vaccine.png', dpi=100)
+            
