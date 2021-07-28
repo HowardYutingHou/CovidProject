@@ -3,16 +3,11 @@ import matplotlib.pyplot as plt
 
 
 class regions:
+    rho_r = 0.023
     t = 0
-    sir_over_time = []
 
     onebig_matrix = []
-
-    big_matrix = []
     column_matrix = []
-    regions = []
-
-    lockdown_matrix = []
 
     def __init__(self, Tf, h, *args):
         self.Tf = Tf
@@ -28,7 +23,7 @@ class regions:
             self.regions.append(region)
             i += 1
 
-        #self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
+        # self.lockdown_matrix = np.zeros((len(self.regions), len(self.regions)))
         # Populate the lockdown matrix
         '''
         for region in self.regions:
@@ -49,37 +44,32 @@ class regions:
         for region in self.regions:
             # initialized a row of the big_matrix
             row_matrix = np.zeros(len(self.regions)).tolist()
-            
-            if self.t>region.vac_time:
-                diag_matrix = region.SIR_vaccine()
+
+            if self.t > region.vac_time:
+                diag_matrix = region.SIR_vaccine(self.t)
             else:
                 diag_matrix = region.SIR()
-            
+
             # store it in the correct position of the row
             row_matrix[region.index] = diag_matrix
-            
+
             titf = region.lockdown
-            
-            if ((self.t > titf[0]) & (self.t <= titf[1])):
-                
-                region.beta = region.beta / 2
+
+            if (self.t > titf[0]) & (self.t <= titf[1]):
+                # region.beta = region.beta / 2
                 row_matrix[region.index] = region.SIR()
-                region.beta = region.beta * 2  # recover it back to what it was
+                # region.beta = region.beta * 2  # recover it back to what it was
                 for border in list(region.border_InterCoeffs.keys()):
                     if border.index != region.index:
                         row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-                        
+
             else:
                 for border in list(region.border_InterCoeffs.keys()):
                     if border.index != region.index:
-                        titf = border.lockdown
-                        if ((self.t > titf[0]) & (self.t <= titf[1])):
-                            row_matrix[border.index] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-                        else:
-                            row_matrix[region.index][0][0] -= region.border_out[border][0]
-                            row_matrix[region.index][1][1] -= region.border_out[border][1]
-                            row_matrix[region.index][2][2] -= region.border_out[border][2]
-                            row_matrix[border.index] = region.border_InterCoeffs[border]
+                        row_matrix[region.index][0][0] -= region.border_out[border][0]
+                        row_matrix[region.index][1][1] -= region.border_out[border][1]
+                        row_matrix[region.index][2][2] -= region.border_out[border][2]
+                        row_matrix[border.index] = region.border_InterCoeffs[border]
 
             self.big_matrix[region.index] = row_matrix
 
@@ -98,15 +88,6 @@ class regions:
                 j_start += 3
             i_start += 3
 
-    '''
-    def construct_column(self):
-        self.column_matrix = []
-        for region in self.regions:
-            self.column_matrix.append([region.S / region.N])
-            self.column_matrix.append([region.I / region.N])
-            self.column_matrix.append([region.R / region.N])
-        self.column_matrix = np.array(self.column_matrix)
-    '''
 
     # without normalization
     def construct_column(self):
@@ -140,8 +121,6 @@ class regions:
             # finally, update the column_matrix
             self.column_matrix = self.column_matrix + ((self.h) / 2) * (dudt + dudt_new)
             self.sir_over_time.append(self.column_matrix)
-
-
     # explicit euler
     def bruteforce_solver(self):
         N = int(self.Tf / self.h) + 1
@@ -229,9 +208,8 @@ class regions:
             legend.get_frame().set_alpha(0.5)
             name = self.regions[i].name
             plt.title(name)
-            
+
             fig1 = plt.gcf()
             plt.draw()
             plt.show()
-            fig1.savefig(name+' vaccine.png', dpi=100)
-            
+            fig1.savefig(name + ' vaccine.png', dpi=100)

@@ -1,3 +1,5 @@
+import math
+
 from SIRModels import SIREpidemic, SIREndemic
 
 
@@ -5,13 +7,7 @@ class RegionEpi(SIREpidemic):
     name = ""
     index = 0
 
-    S = 0
-    I = 0
-    R = 0
-    N = 0
-
-    beta = 0  # contact rate
-    gamma = 0  # gamma
+    rho = 0
 
     # key is of object region, and value is interaction matrix with the region.
     # border_InterCoeffs = {}
@@ -22,37 +18,47 @@ class RegionEpi(SIREpidemic):
     # Key is a tuple containing the start date and end date of lockdown.
     # border_lockdown = {}
 
-    def __init__(self, S, I, R, N, beta, gamma, rho, name, lockdown, vac_time):
+    def __init__(self, S, I, R, N, beta, gamma, rho_0, rho_K, rho_r, name, lockdown, vac_time):
         self.S = S
         self.I = I
         self.R = R
         self.N = N
         self.beta = beta
         self.gamma = gamma
-        self.rho = rho 
+
+        self.rho_0 = rho_0
+        self.rho_K = rho_K
+        self.rho_r = rho_r
+
         self.name = name
         self.lockdown = lockdown
         self.vac_time = vac_time
         self.border_InterCoeffs = {}
         self.border_out = {}
-        #self.border_lockdown = {}
-        
+        # self.border_lockdown = {}
+
         super(RegionEpi, self).__init__()
 
     def set_borders(self, *borders):
         for border in borders:
             self.border_InterCoeffs[border] = {}  # can initialize to be anything, which is to be changed later.
-            #self.border_lockdown[border] = 0  # default 0 if no lockdown
+            # self.border_lockdown[border] = 0  # default 0 if no lockdown
 
     def __call__(self):
         print(self.name)
 
     def SIR(self):
         return super(RegionEpi, self).SIREpi(self.beta, self.gamma, self.S, self.I, self.R, self.N)
-    
-    def SIR_vaccine(self):
+
+    def update_rho(self, t):
+        numerator = self.rho_0 * math.exp(self.rho_r * (t - self.vac_time))
+        denominator = 1 + self.rho_0 * (math.exp(self.rho_r * (t - self.vac_time)) - 1) / self.rho_K
+        self.rho = numerator / denominator
+
+    def SIR_vaccine(self, t):
+        self.update_rho(t)
         return super(RegionEpi, self).Vaccine(self.beta, self.gamma, self.rho, self.S, self.I, self.R, self.N)
-    
+
     # s_i = susceptible inflow rate, s_o = susceptible outflow rate
     # i_i = infected inflow rate, i_o = infected outflow rate
     def set_InterCoeffs(self, border, s_i, s_o, i_i, i_o, r_i, r_o):
@@ -74,21 +80,14 @@ class RegionEpi(SIREpidemic):
             border.lockdown(self, ti, tf)
     '''
 
-from SIRModels import SIREpidemic
+
 
 
 class RegionEnd(SIREndemic):
     name = ""
     index = 0
 
-    S = 0
-    I = 0
-    R = 0
-    N = 0
-
-    beta = 0  # contact rate
-    gamma = 0  # gamma
-    mu = 0
+    rho = 0
 
     # key is of object region, and value is interaction matrix with the region.
     # border_InterCoeffs = {}
@@ -99,7 +98,7 @@ class RegionEnd(SIREndemic):
     # Key is a tuple containing the start date and end date of lockdown.
     # border_lockdown = {}
 
-    def __init__(self, S, I, R, N, beta, gamma, mu, rho, name, lockdown, vac_time):
+    def __init__(self, S, I, R, N, beta, gamma, mu, rho_0, rho_K, rho_r, name, lockdown, vac_time):
         self.S = S
         self.I = I
         self.R = R
@@ -107,20 +106,24 @@ class RegionEnd(SIREndemic):
         self.beta = beta
         self.gamma = gamma
         self.mu = mu
-        self.rho = rho
+
+        self.rho_0 = rho_0
+        self.rho_K = rho_K
+        self.rho_r = rho_r
+
         self.name = name
         self.lockdown = lockdown
         self.vac_time = vac_time
         self.border_InterCoeffs = {}
         self.border_out = {}
-        #self.border_lockdown = {}
+        # self.border_lockdown = {}
 
         super(RegionEnd, self).__init__()
 
     def set_borders(self, *borders):
         for border in borders:
             self.border_InterCoeffs[border] = {}  # can initialize to be anything, which is to be changed later.
-            #self.border_lockdown[border] = 0  # default 0 if no lockdown
+            # self.border_lockdown[border] = 0  # default 0 if no lockdown
 
     def __call__(self):
         print(self.name)
@@ -128,7 +131,13 @@ class RegionEnd(SIREndemic):
     def SIR(self):
         return super(RegionEnd, self).SIREnd(self.beta, self.gamma, self.mu, self.S, self.I, self.R, self.N)
 
-    def SIR_vaccine(self):
+    def update_rho(self, t):
+        numerator = self.rho_0 * math.exp(self.rho_r * (t - self.vac_time))
+        denominator = 1 + self.rho_0 * (math.exp(self.rho_r * (t - self.vac_time)) - 1) / self.rho_K
+        self.rho = numerator / denominator
+
+    def SIR_vaccine(self, t):
+        self.update_rho(t)
         return super(RegionEnd, self).Vaccine(self.beta, self.gamma, self.mu, self.rho, self.S, self.I, self.R, self.N)
 
     # s_i = susceptible inflow rate, s_o = susceptible outflow rate
