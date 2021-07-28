@@ -12,7 +12,7 @@ N_c = 3;
 N_r = 7;
 
 t0 = 0;
-tf = 100;
+tf = 1800;
 dt = 1;
 
 % First, create an empty vector whose elements are individual states (objs of
@@ -22,7 +22,6 @@ obj_regs(N_r, 1) = oop_stateclass();
 % Assign name and SIR (intra-state) parameters to the objects
 for i = 1:length(obj_regs)
     obj_regs(i).name = fake_data.name(i);
-%     obj_regs(i).Tot = fake_data.N(i);
     obj_regs(i).S = fake_data.S(i);
     obj_regs(i).I = fake_data.I(i);
     obj_regs(i).R = fake_data.R(i);
@@ -37,12 +36,7 @@ end
 
 
 %%%%% Solve the problem
-% Construct matrix
-[A_L,M, Local, u0] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs);
-A_NL = assembleA_NL(N_c, N_r, obj_regs, t);
-
-% Solve the system
-soln = SIR_solver(N_c, N_r, u0, dt, t0, tf, fake_inter, obj_regs);
+[obj_regs, soln] = SIR_solver(N_c, N_r, dt, t0, tf, fake_inter, obj_regs);
 
 
 %%%%% Plot the solution

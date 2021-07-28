@@ -31,15 +31,6 @@ classdef oop_stateclass
     
     
     methods
-        function obj = setS(obj,val)
-            obj.S = val;
-        end
-        function obj = setI(obj,val)
-            obj.I = val;
-        end
-        function obj = setR(obj,val)
-            obj.R = val;
-        end
         function a = get.Tot(obj)
             a = obj.S + obj.I + obj.R;
         end

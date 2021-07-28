@@ -16,8 +16,6 @@ function [A_NL] = assembleA_NL(N_c, N_r, obj_regs, t)
 
 A_NL = zeros(N_c*N_r, 1);
 
-% obj_regs.Tot
-
 for i = 1:N_r
     j = N_c*(i-1)+1;
 
@@ -28,7 +26,10 @@ for i = 1:N_r
 %         * Region(j)*Region(j+1)/obj_regs(i).Tot; % -beta*I*S/N
 %     A_NL(j+2) = Local(3, i)*Region(j+1); % gamma*I
 
-    A_NL(j)   = -obj_regs(i).beta*(1-0.9*(t > obj_regs(i).ld0 & t < obj_regs(i).ldf))*obj_regs(i).S*obj_regs(i).I/obj_regs(i).Tot + obj_regs(i).mu*obj_regs(i).Tot;
-    A_NL(j+1) = obj_regs(i).beta*(1-0.9*(t > obj_regs(i).ld0 & t < obj_regs(i).ldf))*obj_regs(i).S*obj_regs(i).I/obj_regs(i).Tot;
+    A_NL(j)   = -obj_regs(i).beta*(1-0.9*(t > obj_regs(i).ld0 & t < obj_regs(i).ldf))...
+        *obj_regs(i).S*obj_regs(i).I/obj_regs(i).Tot + obj_regs(i).mu*obj_regs(i).Tot;
+    A_NL(j+1) = obj_regs(i).beta*(1-0.9*(t > obj_regs(i).ld0 & t < obj_regs(i).ldf))...
+        *obj_regs(i).S*obj_regs(i).I/obj_regs(i).Tot;
     A_NL(j+2) = 0;
 end
+
