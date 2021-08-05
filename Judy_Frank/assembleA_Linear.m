@@ -1,28 +1,46 @@
-function [A_L, M, Local, u0] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs)
+function [A_L, M, Local, u0] = assembleA_Linear(N_c, N_r, fake_inter, obj_regs, t)
 A_L = zeros(N_c*N_r, N_c*N_r);
 Local = [obj_regs.mu; obj_regs.beta; obj_regs.nu];
 
 % Initial compartmental populations for each region in form of a vector
 % [S1; I1; R1; S2; I2; R2; ...]
 u0 = zeros(N_c*N_r, 1);
-for i = 1:N_c:length(u0)
-    u0(i) = obj_regs(round((i+N_c-1)/3)).S;
-    u0(i+1) = obj_regs(round((i+N_c-1)/3)).I;
-    u0(i+2) = obj_regs(round((i+N_c-1)/3)).R;
+q = 0;
+for p = 1:N_r
+    pq = p+q;
+    u0(pq) = obj_regs(p).S;
+    u0(pq+1) = obj_regs(p).I;
+    u0(pq+2) = obj_regs(p).R;
+    obj_regs(p).rho = obj_regs(p).rhom*exp(obj_regs(p).a*(t-obj_regs(p).tV))/...
+        (1+obj_regs(p).rhom/obj_regs(p).rhoM*(exp(obj_regs(p).a*(t-obj_regs(p).tV))-1));
+    q = q+N_c-1;
 end
 
 
 %%%%% Intra-state mobility (SIR dynamics)
+% 
+% Endemic
 j = 0;
 for i = 1:N_r
     ii = i + j;
-    A_L(ii,ii) = -obj_regs(i).mu;
+    A_L(ii,ii) = -obj_regs(i).mu -obj_regs(i).rho;
     A_L(ii+1,ii+1) = -obj_regs(i).nu - obj_regs(i).mu;
+    A_L(ii+2,ii) = obj_regs(i).rho;
     A_L(ii+2, ii+1) = obj_regs(i).nu;
     A_L(ii+2,ii+2) = - obj_regs(i).mu;
     j = j + N_c - 1;
 end
 
+% Epidemic
+% j = 0;
+% for i = 1:N_r
+%     ii = i + j;
+%     A_L(ii,ii) = -obj_regs(i).rho;
+%     A_L(ii+1,ii+1) = -obj_regs(i).nu;
+%     A_L(ii+2,ii) = obj_regs(i).rho;
+%     A_L(ii+2, ii+1) = obj_regs(i).nu;
+%     j = j + N_c - 1;
+% end
 
 %%%%% Mobility matrix
 

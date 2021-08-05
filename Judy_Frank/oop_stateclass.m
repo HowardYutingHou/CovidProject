@@ -9,11 +9,16 @@ classdef oop_stateclass
         S
         I
         R
-%         Tot
         
         mu % reproduction/death rate
         nu  % recovery rate
         beta  % infection rate/number of adequate contacts
+        
+        rho % vaccination rate (follows logistic growth)
+        rhom
+        rhoM
+        a % steepness of logistic curve
+        tV % vaccination start time
         
         ld0 % lockdown start day
         ldf % lockdown end day
