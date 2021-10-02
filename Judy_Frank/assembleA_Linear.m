@@ -11,8 +11,8 @@ for p = 1:N_r
     u0(pq) = obj_regs(p).S;
     u0(pq+1) = obj_regs(p).I;
     u0(pq+2) = obj_regs(p).R;
-    obj_regs(p).rho = obj_regs(p).rhom*exp(obj_regs(p).a*(t-obj_regs(p).tV))/...
-        (1+obj_regs(p).rhom/obj_regs(p).rhoM*(exp(obj_regs(p).a*(t-obj_regs(p).tV))-1));
+    obj_regs(p).rho = 0;%obj_regs(p).rhom*exp(obj_regs(p).a*(t-obj_regs(p).tV))/...
+%         (1+obj_regs(p).rhom/obj_regs(p).rhoM*(exp(obj_regs(p).a*(t-obj_regs(p).tV))-1));
     q = q+N_c-1;
 end
 

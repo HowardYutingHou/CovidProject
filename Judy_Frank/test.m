@@ -12,7 +12,7 @@ N_c = 3;
 N_r = 7;
 
 t0 = 0;
-tf = 100;
+tf = 500;
 dt = 1;
 
 % First, create an empty vector whose elements are individual states (objs of
@@ -30,8 +30,8 @@ for i = 1:length(obj_regs)
     obj_regs(i).nu = fake_data.gamma(i);
     
     % set lockdown start & end day
-    obj_regs(i).ld0 = fake_data.lockdown_start(i);
-    obj_regs(i).ldf = fake_data.lockdown_end(i);
+    obj_regs(i).ld0 = 0;%fake_data.lockdown_start(i);
+    obj_regs(i).ldf = 0;%fake_data.lockdown_end(i);
     
     % set vaccination info
     obj_regs(i).rhom = fake_data.rho_0(i);
@@ -39,7 +39,6 @@ for i = 1:length(obj_regs)
     obj_regs(i).a = fake_data.rho_r(i);
     obj_regs(i).tV = fake_data.vac_time(i);
 end
-
 
 %%%%% Solve the problem
 [obj_regs, soln] = SIR_solver(N_c, N_r, dt, t0, tf, fake_inter, obj_regs);
